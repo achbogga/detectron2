@@ -12,7 +12,7 @@ from ..common.train import train
 model_checkpoint_output_dir = "/home/aboggaram/models/octiva_mrcnn_r50_fpn_10_26_2022_dataset_945_images"
 
 num_classes = 3
-batch_size = 32
+batch_size = 16
 epochs = 100
 no_of_samples = 945
 image_size = 1024
