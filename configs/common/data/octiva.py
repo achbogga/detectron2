@@ -12,8 +12,8 @@ from detectron2.evaluation import COCOEvaluator
 from detectron2.data.datasets import register_coco_instances
 
 # register custom dataset
-train_json = '/home/aboggaram/data/Octiva/consolidated_coco_format_validated_10_26_2022/train.json'
-test_json = '/home/aboggaram/data/Octiva/consolidated_coco_format_validated_10_26_2022/test.json'
+train_json = '/home/aboggaram/data/Octiva/consolidated_coco_format_validated_11_01_2022/train.json'
+test_json = '/home/aboggaram/data/Octiva/consolidated_coco_format_validated_11_01_2022/test.json'
 image_dir = '/home/aboggaram/data/Octiva/data_for_playment'
 register_coco_instances("octiva_train", {}, train_json, image_dir)
 register_coco_instances("octiva_test", {}, test_json, image_dir)
