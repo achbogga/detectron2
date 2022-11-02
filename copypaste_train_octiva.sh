@@ -1,0 +1,1 @@
+time python3 train_detectron2_copypaste.py | tee /home/aboggaram/logs/octiva_copypaste_training_1454_images.log
