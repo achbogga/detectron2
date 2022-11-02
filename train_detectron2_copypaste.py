@@ -326,6 +326,8 @@ class MyMapper:
             for contour in contours:
                 contour = np.flip(contour, axis=1)
                 segmentation = contour.ravel().tolist()
+                if len(segmentation)<6:
+                    continue
                 annotation["segmentation"].append(segmentation)
                 
             annos.append(annotation)
