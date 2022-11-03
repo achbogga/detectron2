@@ -13,7 +13,7 @@ model_checkpoint_output_dir = "/home/aboggaram/models/octiva_mrcnn_r50_fpn_Nov_2
 
 num_classes = 3
 batch_size = 8
-epochs = 400
+epochs = 650
 no_of_samples = 1454
 image_size = 1024
 no_of_checkpoints_to_keep = 10
