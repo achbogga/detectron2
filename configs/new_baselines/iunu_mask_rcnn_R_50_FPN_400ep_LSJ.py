@@ -9,12 +9,12 @@ from ..common.models.mask_rcnn_fpn import model
 from ..common.optim import SGD as optimizer
 from ..common.train import train
 
-model_checkpoint_output_dir = "/home/aboggaram/models/octiva_mrcnn_r50_fpn_10_26_2022_dataset_945_images"
+model_checkpoint_output_dir = "/home/aboggaram/models/octiva_mrcnn_r50_fpn_Nov_2_2022_dataset_1454_images"
 
 num_classes = 3
-batch_size = 16
+batch_size = 8
 epochs = 400
-no_of_samples = 945
+no_of_samples = 1454
 image_size = 1024
 no_of_checkpoints_to_keep = 10
 
@@ -62,6 +62,10 @@ dataloader.train.mapper.augmentations = [
     ),
     L(T.FixedSizeCrop)(crop_size=(image_size, image_size)),
     L(T.RandomFlip)(horizontal=True),
+    L(T.RandomRotation)(angle = [-45, 45]),
+    L(T.RandomSaturation)(intensity_min = 0.85, intensity_max = 1.15),
+    L(T.RandomBrightness)(intensity_min = 0.85, intensity_max = 1.15),
+    L(T.RandomContrast)(intensity_min = 0.85, intensity_max = 1.15),
 ]
 
 # recompute boxes due to cropping
