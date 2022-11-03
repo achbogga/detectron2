@@ -9,7 +9,7 @@ from ..common.models.mask_rcnn_fpn import model
 from ..common.optim import SGD as optimizer
 from ..common.train import train
 
-model_checkpoint_output_dir = "/home/aboggaram/models/octiva_mrcnn_r50_fpn_Nov_2_2022_dataset_1454_images"
+model_checkpoint_output_dir = "/home/aboggaram/models/octiva_mrcnn_r50_fpn_Nov_3_2022_dataset_1454_images"
 
 num_classes = 3
 batch_size = 8
