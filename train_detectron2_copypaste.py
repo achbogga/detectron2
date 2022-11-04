@@ -77,6 +77,7 @@ from detectron2.data import transforms as T
 from detectron2.data import detection_utils as utils
 from detectron2.engine import DefaultTrainer
 from detectron2.config import get_cfg
+from detectron2.evaluation import COCOEvaluator
 import os
 import copy
 
@@ -175,8 +176,8 @@ import albumentations as A
 aug_list = [A.Resize(image_size,image_size),#resize all images to fixed shape
         CopyPaste(blend=True, sigma=1, pct_objects_paste=0.9, p=1.0) #pct_objects_paste is a guess
     ]
-        
-    
+
+
 #you can add any augmentation from albumentations to this list, for example, you can use:
 
 
@@ -200,8 +201,8 @@ transform = A.Compose(
 
 
 data = CocoDetectionCP(
-    '/home/aboggaram/data/Octiva/data_for_playment', 
-    '/home/aboggaram/data/Octiva/consolidated_coco_format_validated_11_01_2022/train.json', 
+    '/home/aboggaram/data/Octiva/data_for_playment',
+    '/home/aboggaram/data/Octiva/consolidated_coco_format_validated_11_01_2022/train.json',
     transform
 )
 
@@ -290,44 +291,44 @@ class MyMapper:
     def __call__(self, dataset_dict):
         dataset_dict = copy.deepcopy(dataset_dict)  # it will be modified by code below
         img_id = dataset_dict['image_id']
-        
-        
+
+
         aug_sample = data[data_id_to_num[img_id]]
-        
+
         image = aug_sample['image']
-        
+
         image =  cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
-        
+
         dataset_dict["image"] = torch.as_tensor(image.transpose(2, 0, 1).astype("float32"))
-        
-        
+
+
         bboxes = aug_sample['bboxes']
         box_classes = np.array([b[-2] for b in bboxes])
         boxes = np.stack([b[:4] for b in bboxes], axis=0)
         mask_indices = np.array([b[-1] for b in bboxes])
-        
-        
+
+
         masks = aug_sample['masks']
-        
+
         annos = []
-        
+
         for enum,index in enumerate(mask_indices):
             curr_mask = masks[index]
-            
+
             fortran_ground_truth_binary_mask = np.asfortranarray(curr_mask)
             encoded_ground_truth = mask.encode(fortran_ground_truth_binary_mask)
             ground_truth_area = mask.area(encoded_ground_truth)
             ground_truth_bounding_box = mask.toBbox(encoded_ground_truth)
             contours = measure.find_contours(curr_mask, 0.5)
-            
+
             annotation = {
         "segmentation": [],
         "iscrowd": 0,
-        "bbox": ground_truth_bounding_box.tolist(), 
+        "bbox": ground_truth_bounding_box.tolist(),
         "category_id": train_metadata.thing_dataset_id_to_contiguous_id[box_classes[enum]]  ,
         "bbox_mode":BOX_MODE
-                
-                
+
+
     }
             for contour in contours:
                 contour = np.flip(contour, axis=1)
@@ -335,13 +336,13 @@ class MyMapper:
                 if len(segmentation)<6:
                     continue
                 annotation["segmentation"].append(segmentation)
-                
+
             annos.append(annotation)
-        
+
 
         image_shape = image.shape[:2]  # h, w
 
-        
+
         instances = utils.annotations_to_instances(annos, image_shape)
         dataset_dict["instances"] = utils.filter_empty_instances(instances)
         return dataset_dict
@@ -391,7 +392,7 @@ cfg.DATASETS.VAL = ("octiva_test",)
 max_iter = int(epochs*(no_of_samples/batch_size))
 checkpoint_period = int(max_iter*0.1)
 
-                
+
 cfg.INPUT.MIN_SIZE_TEST= image_size
 cfg.INPUT.MAX_SIZE_TEST = image_size
 cfg.INPUT.MIN_SIZE_TRAIN = image_size
@@ -414,7 +415,7 @@ cfg.SOLVER.WARMUP_FACTOR = 1.0 / 3
 cfg.SOLVER.WARMUP_ITERS = 500
 cfg.SOLVER.WARMUP_METHOD = "linear"
 
-cfg.SOLVER.MAX_ITER =max_iter    
+cfg.SOLVER.MAX_ITER =max_iter
 cfg.MODEL.ROI_HEADS.NUM_CLASSES = 3
 cfg.MODEL.RETINANET.NUM_CLASSES = 3
 cfg.SOLVER.CHECKPOINT_PERIOD = checkpoint_period
@@ -422,9 +423,13 @@ cfg.TEST.EVAL_PERIOD = checkpoint_period
 
 
 cfg.OUTPUT_DIR = '/home/aboggaram/models/octiva_copypaste_mrcnn_R_50_FPN_3x'
+eval_output_dir = '/home/aboggaram/data/octiva_copypaste_eval'
 os.makedirs(cfg.OUTPUT_DIR, exist_ok=True)
+os.makedirs(eval_output_dir, exist_ok=True)
 
-trainer = MyTrainer(cfg) 
+trainer = MyTrainer(cfg)
+my_coco_evaluator = COCOEvaluator("octiva_test", output_dir=eval_output_dir)
+trainer.test(evaluators=my_coco_evaluator, cfg=cfg, model=trainer.model)
 
 trainer.resume_or_load(resume=True)
 
