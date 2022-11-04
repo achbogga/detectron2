@@ -4,7 +4,7 @@ import fvcore.nn.weight_init as weight_init
 import torch
 from torch import nn
 from torch.nn import functional as F
-from bce_dice_loss import BinaryDiceLoss
+# from detectron2.modeling.roi_heads.bce_dice_loss import SoftDiceLoss
 
 from detectron2.config import configurable
 from detectron2.layers import Conv2d, ConvTranspose2d, ShapeSpec, cat, get_norm
@@ -109,8 +109,10 @@ def mask_rcnn_loss(pred_mask_logits: torch.Tensor, instances: List[Instances], v
             vis_mask = torch.stack([vis_mask] * 3, axis=0)
             storage.put_image(name + f" ({idx})", vis_mask)
 
-    # mask_loss = F.binary_cross_entropy_with_logits(pred_mask_logits, gt_masks, reduction="mean")
-    mask_loss = BinaryDiceLoss(pred_mask_logits, gt_masks, reduction="mean")
+    mask_loss = F.binary_cross_entropy_with_logits(pred_mask_logits, gt_masks, reduction="mean")
+    # gt_masks = gt_masks.to(dtype=float)
+    # pred_mask_logits = pred_mask_logits.to(dtype=float)
+    # mask_loss = SoftDiceLoss(pred_mask_logits, gt_masks)
     return mask_loss
 
 

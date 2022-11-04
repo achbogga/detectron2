@@ -111,6 +111,12 @@ for d in ['train','test']:
     image_root= "/home/aboggaram/data/Octiva/data_for_playment",\
     dataset_name="octiva_"+d))
 
+batch_size = 8
+epochs = 400
+no_of_samples = 1454
+image_size = 1024
+no_of_checkpoints_to_keep = 10
+
 
 # In[12]:
 
@@ -166,7 +172,7 @@ import albumentations as A
 # In[18]:
 
 
-aug_list = [A.Resize(800,800),#resize all images to fixed shape
+aug_list = [A.Resize(image_size,image_size),#resize all images to fixed shape
         CopyPaste(blend=True, sigma=1, pct_objects_paste=0.9, p=1.0) #pct_objects_paste is a guess
     ]
         
@@ -174,7 +180,7 @@ aug_list = [A.Resize(800,800),#resize all images to fixed shape
 #you can add any augmentation from albumentations to this list, for example, you can use:
 
 
-aug_list = [A.Resize(800,800),\
+aug_list = [A.Resize(image_size,image_size),\
             A.OneOf([A.HorizontalFlip(),A.RandomRotate90()],p=0.75),\
             A.OneOf([A.HueSaturationValue(hue_shift_limit=10, sat_shift_limit=35, val_shift_limit=25),A.RandomGamma(),A.CLAHE()],p=0.5),\
             A.OneOf([A.RandomBrightnessContrast(brightness_limit=0.25, contrast_limit=0.25),A.RGBShift(r_shift_limit=15, g_shift_limit=15, b_shift_limit=15)],p=0.5),\
@@ -374,34 +380,29 @@ from detectron2.engine import launch
 
 cfg = get_cfg()
 #cfg.merge_from_file(model_zoo.get_config_file("COCO-InstanceSegmentation/mask_rcnn_R_101_FPN_3x.yaml"))
-cfg.merge_from_file(model_zoo.get_config_file("COCO-InstanceSegmentation/mask_rcnn_R_101_FPN_3x.yaml"))
+cfg.merge_from_file(model_zoo.get_config_file("COCO-InstanceSegmentation/mask_rcnn_R_50_FPN_3x.yaml"))
 
 cfg.DATASETS.TRAIN = ("octiva_train",)
 
 
 cfg.DATASETS.VAL = ("octiva_test",)
 
-batch_size = 16
-epochs = 400
-no_of_samples = 1454
-image_size = 800
-no_of_checkpoints_to_keep = 10
 
 max_iter = int(epochs*(no_of_samples/batch_size))
-checkpoint_period = int(max_iter*0.05)
+checkpoint_period = int(max_iter*0.1)
 
                 
-cfg.INPUT.MIN_SIZE_TEST= 800
-cfg.INPUT.MAX_SIZE_TEST = 800
-cfg.INPUT.MIN_SIZE_TRAIN = 800
-cfg.INPUT.MAX_SIZE_TRAIN = 800
+cfg.INPUT.MIN_SIZE_TEST= image_size
+cfg.INPUT.MAX_SIZE_TEST = image_size
+cfg.INPUT.MIN_SIZE_TRAIN = image_size
+cfg.INPUT.MAX_SIZE_TRAIN = image_size
 cfg.INPUT.MASK_FORMAT = "polygon"
 cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.0001
 
 cfg.INPUT.FORMAT = 'BGR'
 cfg.DATASETS.TEST = ("octiva_test",)
 cfg.DATALOADER.NUM_WORKERS = 6
-cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url("COCO-InstanceSegmentation/mask_rcnn_R_101_FPN_3x.yaml")  # Let training initialize from model zoo
+cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url("COCO-InstanceSegmentation/mask_rcnn_R_50_FPN_3x.yaml")  # Let training initialize from model zoo
 
 cfg.SOLVER.IMS_PER_BATCH = batch_size
 cfg.SOLVER.BASE_LR = 0.02
@@ -417,9 +418,10 @@ cfg.SOLVER.MAX_ITER =max_iter
 cfg.MODEL.ROI_HEADS.NUM_CLASSES = 3
 cfg.MODEL.RETINANET.NUM_CLASSES = 3
 cfg.SOLVER.CHECKPOINT_PERIOD = checkpoint_period
+cfg.TEST.EVAL_PERIOD = checkpoint_period
 
 
-cfg.OUTPUT_DIR = '/home/aboggaram/models/octiva_copypaste_mrcnn_retinanet_101'
+cfg.OUTPUT_DIR = '/home/aboggaram/models/octiva_copypaste_mrcnn_R_50_FPN_3x'
 os.makedirs(cfg.OUTPUT_DIR, exist_ok=True)
 
 trainer = MyTrainer(cfg) 

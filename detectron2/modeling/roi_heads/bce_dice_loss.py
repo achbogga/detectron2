@@ -7,6 +7,25 @@ import torch.nn.functional as F
 import numpy as np
 
 
+class SoftDiceLoss(nn.Module):
+    def __init__(self, weight=None, size_average=True):
+        super(SoftDiceLoss, self).__init__()
+
+    def forward(self, logits, targets):
+        smooth = 1
+        num = targets.size(0)
+        """
+       I am assuming the model does not have sigmoid layer in the end. if that is the case, change torch.sigmoid(logits) to simply logits
+        """
+        probs = torch.sigmoid(logits)
+        m1 = probs.view(num, -1)
+        m2 = targets.view(num, -1)
+        intersection = (m1 * m2)
+
+        score = 2. * (intersection.sum(1) + smooth) / (m1.sum(1) + m2.sum(1) + smooth)
+        score = 1 - score.sum() / num
+        return score
+
 def make_one_hot(input, num_classes):
     """Convert class index tensor to one hot encoding tensor.
 

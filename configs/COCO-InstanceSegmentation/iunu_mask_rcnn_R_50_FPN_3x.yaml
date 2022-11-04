@@ -39,11 +39,13 @@ DATASETS:
   TRAIN: ("octiva_train",)
   TEST: ("octiva_test",)
 SOLVER:
-  IMS_PER_BATCH: 16
+  IMS_PER_BATCH: 8
   BASE_LR: 0.02
-  STEPS: (6000, 8000)
-  MAX_ITER: 9000
-  STEPS: (21000, 25000)
-  MAX_ITER: 30000
+  STEPS: (8000, 14540)
+  MAX_ITER: 
+  STEPS: (43620, 58160)
+  MAX_ITER: 72000
+  CHECKPOINT_PERIOD: 5000
+  MAX_TO_KEEP: 10
 OUTPUT_DIR: "/home/aboggaram/models/octiva_mrcnn_r50_fpn"
 VERSION: 2
