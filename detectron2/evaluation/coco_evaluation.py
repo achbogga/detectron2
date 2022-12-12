@@ -232,7 +232,10 @@ class COCOEvaluator(DatasetEvaluator):
             dataset_id_to_contiguous_id = self._metadata.thing_dataset_id_to_contiguous_id
             all_contiguous_ids = list(dataset_id_to_contiguous_id.values())
             num_classes = len(all_contiguous_ids)
-            assert min(all_contiguous_ids) == 0 and max(all_contiguous_ids) == num_classes - 1
+            try:
+                assert min(all_contiguous_ids) == 0 and max(all_contiguous_ids) == num_classes - 1
+            except ValueError:
+                pass
 
             reverse_id_mapping = {v: k for k, v in dataset_id_to_contiguous_id.items()}
             for result in coco_results:
