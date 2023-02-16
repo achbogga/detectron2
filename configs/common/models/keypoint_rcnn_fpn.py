@@ -5,7 +5,7 @@ from detectron2.modeling.roi_heads import KRCNNConvDeconvUpsampleHead
 
 from .mask_rcnn_fpn import model
 
-[model.roi_heads.pop(x) for x in ["mask_in_features", "mask_pooler", "mask_head"]]
+# [model.roi_heads.pop(x) for x in ["mask_in_features", "mask_pooler", "mask_head"]]
 
 model.roi_heads.update(
     num_classes=1,

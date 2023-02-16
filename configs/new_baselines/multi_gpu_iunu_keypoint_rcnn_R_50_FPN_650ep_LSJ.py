@@ -2,6 +2,7 @@ import detectron2.data.transforms as T
 from detectron2.config.lazy import LazyCall as L
 from detectron2.solver import WarmupParamScheduler
 from fvcore.common.param_scheduler import MultiStepParamScheduler
+from detectron2.layers.batch_norm import NaiveSyncBatchNorm
 
 # trunk-ignore(mypy/misc)
 from ..common.data.octiva_keypoint import dataloader
@@ -15,7 +16,7 @@ from ..common.train import train
 model_checkpoint_output_dir = "/home/aboggaram/models/Octiva/octiva_keypoint_rcnn_r50_fpn_Feb_15"
 
 num_classes = 1
-batch_size = 4
+batch_size = 8
 epochs = 650
 no_of_train_samples = 4730
 no_of_test_samples = 249
@@ -38,10 +39,16 @@ train.checkpointer = dict(period=checkpoint_period,
 model.backbone.bottom_up.freeze_at = 0
 
 # SyncBN
-# fmt: off
-# model.backbone.bottom_up.stem.norm = \
-#     model.backbone.bottom_up.stages.norm = \
-#     model.backbone.norm = "SyncBN"
+# Using NaiveSyncBatchNorm becase heads may have empty input. That is not supported by
+# torch.nn.SyncBatchNorm. We can remove this after
+# https://github.com/pytorch/pytorch/issues/36530 is fixed.
+model.roi_heads.box_head.conv_norm = \
+    model.roi_heads.mask_head.conv_norm = lambda c: NaiveSyncBatchNorm(c,
+                                                                       stats_mode="N")
+
+model.backbone.bottom_up.stem.norm = \
+    model.backbone.bottom_up.stages.norm = \
+    model.backbone.norm = "SyncBN"
 
 model.roi_heads.num_classes = num_classes
 
@@ -90,5 +97,5 @@ lr_multiplier = L(WarmupParamScheduler)(
     warmup_factor=0.067,
 )
 
-optimizer.lr = 0.00005
+optimizer.lr = 0.005
 optimizer.weight_decay = 4e-5
