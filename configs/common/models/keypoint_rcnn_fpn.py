@@ -18,7 +18,7 @@ model.roi_heads.update(
     ),
     keypoint_head=L(KRCNNConvDeconvUpsampleHead)(
         input_shape=ShapeSpec(channels=256, width=14, height=14),
-        num_keypoints=17,
+        num_keypoints=3,
         conv_dims=[512] * 8,
         loss_normalizer="visible",
     ),
