@@ -50,4 +50,5 @@ dataloader.test = L(build_detection_test_loader)(
 
 dataloader.evaluator = L(COCOEvaluator)(
     dataset_name="${..test.dataset.names}",
+    kpt_oks_sigmas=[0.33, 0.33, 0.33],
 )

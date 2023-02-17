@@ -13,6 +13,7 @@ from ..common.optim import AdamW as optimizer
 # trunk-ignore(mypy/misc)
 from ..common.train import train
 
+
 model_checkpoint_output_dir = "/home/aboggaram/models/Octiva/octiva_keypoint_rcnn_r50_fpn_Feb_15"
 
 num_classes = 1
@@ -22,6 +23,7 @@ no_of_train_samples = 4730
 no_of_test_samples = 249
 image_size = 640
 no_of_checkpoints_to_keep = 5
+eval_period = 1000
 
 max_iter = int(epochs * (no_of_train_samples / batch_size))
 checkpoint_period = int(max_iter * 0.05)
@@ -36,6 +38,7 @@ train.amp.enabled = True
 train.ddp.fp16_compression = True
 train.checkpointer = dict(period=checkpoint_period,
                           max_to_keep=no_of_checkpoints_to_keep)
+train.eval_period = eval_period
 model.backbone.bottom_up.freeze_at = 0
 
 # SyncBN
@@ -97,5 +100,5 @@ lr_multiplier = L(WarmupParamScheduler)(
     warmup_factor=0.067,
 )
 
-optimizer.lr = 0.005
+optimizer.lr = 0.0005
 optimizer.weight_decay = 4e-5

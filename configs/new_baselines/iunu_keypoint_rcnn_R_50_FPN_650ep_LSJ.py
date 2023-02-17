@@ -25,6 +25,7 @@ no_of_checkpoints_to_keep = 5
 max_iter = int(epochs * (no_of_train_samples / batch_size))
 checkpoint_period = int(max_iter * 0.05)
 eval_steps = int(no_of_test_samples / batch_size)
+eval_period = 1000
 
 
 # train from scratch
@@ -35,6 +36,7 @@ train.amp.enabled = True
 train.ddp.fp16_compression = True
 train.checkpointer = dict(period=checkpoint_period,
                           max_to_keep=no_of_checkpoints_to_keep)
+train.eval_period = eval_period
 model.backbone.bottom_up.freeze_at = 0
 
 # SyncBN
