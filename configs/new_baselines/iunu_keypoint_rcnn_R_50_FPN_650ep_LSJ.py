@@ -12,6 +12,7 @@ from ..common.optim import AdamW as optimizer
 # trunk-ignore(mypy/misc)
 from ..common.train import train
 
+
 model_checkpoint_output_dir = "/home/aboggaram/models/Octiva/octiva_keypoint_rcnn_r50_fpn_Feb_15"
 
 num_classes = 1
@@ -21,11 +22,11 @@ no_of_train_samples = 4730
 no_of_test_samples = 249
 image_size = 640
 no_of_checkpoints_to_keep = 5
+eval_period = 500
 
 max_iter = int(epochs * (no_of_train_samples / batch_size))
 checkpoint_period = int(max_iter * 0.05)
 eval_steps = int(no_of_test_samples / batch_size)
-eval_period = 1000
 
 
 # train from scratch
@@ -39,8 +40,14 @@ train.checkpointer = dict(period=checkpoint_period,
 train.eval_period = eval_period
 model.backbone.bottom_up.freeze_at = 0
 
-# SyncBN
-# fmt: off
+# # SyncBN
+# # Using NaiveSyncBatchNorm becase heads may have empty input. That is not supported by
+# # torch.nn.SyncBatchNorm. We can remove this after
+# # https://github.com/pytorch/pytorch/issues/36530 is fixed.
+# model.roi_heads.box_head.conv_norm = \
+#     model.roi_heads.mask_head.conv_norm = lambda c: NaiveSyncBatchNorm(c,
+#                                                                        stats_mode="N")
+
 # model.backbone.bottom_up.stem.norm = \
 #     model.backbone.bottom_up.stages.norm = \
 #     model.backbone.norm = "SyncBN"
@@ -92,5 +99,5 @@ lr_multiplier = L(WarmupParamScheduler)(
     warmup_factor=0.067,
 )
 
-optimizer.lr = 0.00005
+optimizer.lr = 0.0005
 optimizer.weight_decay = 4e-5
